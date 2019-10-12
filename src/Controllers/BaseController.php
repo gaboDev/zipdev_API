@@ -4,6 +4,10 @@ namespace Controllers;
 
 use App\Classes\Http\Response;
 
+/**
+ * @OA\Info(title="Phone book API", version="0.1")
+ */
+
 abstract class BaseController
 {
 	public $response;

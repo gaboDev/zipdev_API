@@ -13,6 +13,31 @@ use Database\DatabaseConnection as Transaction;
 class PhonesController extends BaseController
 {
 	
+	/**
+	 * @OA\Get(
+	 *     path="/api/v1/phones",
+	 *     tags={"phones"},
+	 *     summary="Return a list of registered phones",
+	 *     description="If a single phone number is provided return its related data.",
+	 *     @OA\Parameter(
+	 *         name="phone",
+	 *         in="query",
+	 *         description="An existing phone number",
+	 *         required=false,
+	 *         @OA\Schema(
+	 *           type="string"
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=200,
+	 *         description="Successful operation"
+	 *     ),
+	 *     @OA\Response(
+	 *         response="404",
+	 *         description="No data found",
+	 *     )
+	 * )
+	 */
 	public function get(Request $request)
 	{
 		try{
@@ -34,6 +59,45 @@ class PhonesController extends BaseController
 	}
 	
 	
+	
+	
+	/**
+	 * @OA\Post(
+	 *     path="/api/v1/phones",
+	 *     summary="Create a phone",
+	 *     tags={"phones"},
+	 *     @OA\Parameter(
+	 *         name="person_identifier",
+	 *         in="query",
+	 *         description="The identifier of the person.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="integer"
+	 *         )
+	 *     ),
+	 *     @OA\Parameter(
+	 *         name="phone",
+	 *         in="query",
+	 *         description="The phone number of the person.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="string"
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=400,
+	 *         description="Some of the required params are not present."
+	 *     ),
+	 *     @OA\Response(
+	 *         response="404",
+	 *         description="Person not found for provided identifier.",
+	 *     ),
+	 *     @OA\Response(
+	 *         response="201",
+	 *         description="The phone number was registered successfully",
+	 *     )
+	 * )
+	 */
 	public function post(Request $request){
 		try{
 			
@@ -41,10 +105,10 @@ class PhonesController extends BaseController
 			$phone = $request->get('phone');
 			
 			if (!Utils::isValidIdentifier($personIdentifier))
-				return $this->response->unprocessable("Invalid person identifier.");
+				return $this->response->errorBadRequest("Invalid person identifier.");
 			
 			if (!Utils::isValidPhone($phone))
-				return $this->response->unprocessable("Invalid phone number.");
+				return $this->response->errorBadRequest("Invalid phone number.");
 			
 			$person = Person::getById($personIdentifier);
 			if (!$person)
@@ -69,6 +133,47 @@ class PhonesController extends BaseController
 	}
 	
 	
+	/**
+	 * @OA\Delete(
+	 *     path="/api/v1/phones",
+	 *     summary="Delete a phone",
+	 *     tags={"phones"},
+	 *     @OA\Parameter(
+	 *         name="person_identifier",
+	 *         in="query",
+	 *         description="The identifier of the person.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="integer"
+	 *         )
+	 *     ),
+	 *     @OA\Parameter(
+	 *         name="phone",
+	 *         in="query",
+	 *         description="The phone number to delete.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="string"
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=400,
+	 *         description="Some of the required params are not present."
+	 *     ),
+	 *     @OA\Response(
+	 *         response="404",
+	 *         description="No person|phone found for provided data.",
+	 *     ),
+	 *     @OA\Response(
+	 *         response="422",
+	 *         description="It was not possible to delete the phone.",
+	 *     ),
+	 *     @OA\Response(
+	 *         response="200",
+	 *         description="Phone deleted successfully",
+	 *     )
+	 * )
+	 */
 	public function delete(Request $request){
 		try{
 			
@@ -76,10 +181,10 @@ class PhonesController extends BaseController
 			$phone = $request->get('phone');
 			
 			if (!Utils::isValidIdentifier($personIdentifier))
-				return $this->response->unprocessable("Invalid person identifier.");
+				return $this->response->errorBadRequest("Invalid person identifier.");
 			
 			if (!Utils::isValidPhone($phone))
-				return $this->response->unprocessable("Invalid phone number.");
+				return $this->response->errorBadRequest("Invalid phone number.");
 			
 			$person = Person::getById($personIdentifier);
 			if (!$person)
@@ -95,7 +200,7 @@ class PhonesController extends BaseController
 			Transaction::commit();
 			
 			return $deleteResult ? $this->response->ok("Phone record deleted.")
-								 : $this->response->ok("Unable to delete phone record.");
+								 : $this->response->unprocessable("Unable to delete phone record.");
 			
 		}catch (\Exception $exception){
 			Transaction::rollBack();
@@ -103,6 +208,45 @@ class PhonesController extends BaseController
 		}
 	}
 	
+	
+	
+	/**
+	 * @OA\Put(
+	 *     path="/api/v1/phones",
+	 *     summary="Update a phone",
+	 *     tags={"phones"},
+	 *     @OA\Parameter(
+	 *         name="phone_identifier",
+	 *         in="query",
+	 *         description="The identifier of the phone record.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="integer"
+	 *         )
+	 *     ),
+	 *     @OA\Parameter(
+	 *         name="phone",
+	 *         in="query",
+	 *         description="The phone number to delete.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="string"
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=400,
+	 *         description="Some of the required params are not present."
+	 *     ),
+	 *     @OA\Response(
+	 *         response="404",
+	 *         description="No phone found for provided data.",
+	 *     ),
+	 *     @OA\Response(
+	 *         response="200",
+	 *         description="Phone updated successfully",
+	 *     )
+	 * )
+	 */
 	public function put(Request $request){
 		try {
 			
@@ -110,10 +254,10 @@ class PhonesController extends BaseController
 			$phone = $request->get('phone');
 			
 			if (!Utils::isValidIdentifier($phoneIdentifier))
-				return $this->response->unprocessable("Invalid phone identifier.");
+				return $this->response->errorBadRequest("Invalid phone identifier.");
 			
 			if (!Utils::isValidPhone($phone))
-				return $this->response->unprocessable("Invalid phone number.");
+				return $this->response->errorBadRequest("Invalid phone number.");
 			
 			$phoneModel = Phone::getById($phoneIdentifier);
 			if (!$phoneModel)

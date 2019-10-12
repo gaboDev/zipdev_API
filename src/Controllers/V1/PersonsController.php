@@ -13,7 +13,31 @@ use Database\DatabaseConnection as Transaction;
 
 class PersonsController extends BaseController
 {
-	
+	/**
+	 * @OA\Get(
+	 *     path="/api/v1/persons",
+	 *     summary="Return a list of registered persons",
+	 *     tags={"persons"},
+	 *     description="If a single indentifier is provided return its related data.",
+	 *     @OA\Parameter(
+	 *         name="identifier",
+	 *         in="query",
+	 *         description="The id of a person",
+	 *         required=false,
+	 *         @OA\Schema(
+	 *           type="integer"
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=200,
+	 *         description="Successful operation"
+	 *     ),
+	 *     @OA\Response(
+	 *         response="404",
+	 *         description="No data found",
+	 *     )
+	 * )
+	 */
 	public function get(Request $request)
 	{
 		try{
@@ -25,8 +49,8 @@ class PersonsController extends BaseController
 				$personsQuery->where('id', '=', $id);
 			
 			$persons = $personsQuery->get();
-			if (empty($persons))
-				return $this->response->ok("No persons found");
+			if (!$persons)
+				return $this->response->errorNotFound("No persons found");
 			
 			return $this->response->ok("ok", $persons);
 		}catch (\Exception $exception){
@@ -35,6 +59,62 @@ class PersonsController extends BaseController
 	}
 	
 	
+	
+	/**
+	 * @OA\Post(
+	 *     path="/api/v1/persons",
+	 *     summary="Create a person",
+	 *     tags={"persons"},
+	 *     @OA\Parameter(
+	 *         name="first_name",
+	 *         in="query",
+	 *         description="The name of the person.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="string"
+	 *         )
+	 *     ),
+	 *     @OA\Parameter(
+	 *         name="surnames",
+	 *         in="query",
+	 *         description="The surnames of the person.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="string"
+	 *         )
+	 *     ),
+	 *     @OA\Parameter(
+	 *         name="phones",
+	 *         in="query",
+	 *         description="comma-separated list of phone numbers, if present create an entry for each provided phone, Ex. of a valid phone list: 5518524571,5514851275",
+	 *         required=false,
+	 *         @OA\Schema(
+	 *           type="string"
+	 *         )
+	 *     ),
+	 *     @OA\Parameter(
+	 *         name="emails",
+	 *         in="query",
+	 *         description="comma-separated list of emails, if present create an entry for each provided email, Ex. of a valid email list: gabs@gmail.com,alx@hotmail.com",
+	 *         required=false,
+	 *         @OA\Schema(
+	 *           type="string"
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=400,
+	 *         description="Some of the required params are not present."
+	 *     ),
+	 *     @OA\Response(
+	 *         response="500",
+	 *         description="Some of the comma-separated list items are not valid.",
+	 *     ),
+	 *     @OA\Response(
+	 *         response="201",
+	 *         description="The information was registered successfully",
+	 *     )
+	 * )
+	 */
 	public function post(Request $request){
 		try{
 			
@@ -46,7 +126,7 @@ class PersonsController extends BaseController
 			$commaSeparatedEmails = $request->get('emails');
 			
 			if (!$firstName || !$surnames)
-				return $this->response->unprocessable("First name and surnames required.");
+				return $this->response->errorBadRequest("First name and surnames required.");
 			
 			$person = Person::create($firstName, $surnames);
 			
@@ -73,19 +153,52 @@ class PersonsController extends BaseController
 	}
 	
 	
+	
+	/**
+	 * @OA\Delete(
+	 *     path="/api/v1/persons",
+	 *     summary="Delete a person",
+	 *     tags={"persons"},
+	 *     @OA\Parameter(
+	 *         name="identifier",
+	 *         in="query",
+	 *         description="The identifier of the person.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="integer"
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=400,
+	 *         description="Some of the required params are not present."
+	 *     ),
+	 *     @OA\Response(
+	 *         response="404",
+	 *         description="No person found for provided identifier.",
+	 *     ),
+	 *     @OA\Response(
+	 *         response="422",
+	 *         description="It was not possible to delete the person.",
+	 *     ),
+	 *     @OA\Response(
+	 *         response="200",
+	 *         description="Person deleted successfully",
+	 *     )
+	 * )
+	 */
 	public function delete(Request $request){
 		try{
 			
 			$identifier = $request->get('identifier');
 			if (!Utils::isValidIdentifier($identifier))
-				return $this->response->unprocessable("Invalid identifier.");
+				return $this->response->errorBadRequest("Invalid identifier.");
 			
 			$person = Person::getById($identifier);
 			if (!$person)
 				return $this->response->errorNotFound("Person not found.");
 			
 			if (!$person->delete())
-				return $this->response->ok("Unable to delete person record.");
+				return $this->response->unprocessable("Unable to delete person record.");
 			
 			return $this->response->ok("Person and attached data deleted.");
 		}catch (\Exception $exception){
@@ -93,6 +206,56 @@ class PersonsController extends BaseController
 		}
 	}
 	
+	
+	
+	
+	
+	/**
+	 * @OA\Put(
+	 *     path="/api/v1/persons",
+	 *     summary="Update a person",
+	 *     tags={"persons"},
+	 *     @OA\Parameter(
+	 *         name="identifier",
+	 *         in="query",
+	 *         description="The identifier of the person.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="integer"
+	 *         )
+	 *     ),
+	 *     @OA\Parameter(
+	 *         name="first_name",
+	 *         in="query",
+	 *         description="The new first name of the person.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="string"
+	 *         )
+	 *     ),
+	 *     @OA\Parameter(
+	 *         name="surnames",
+	 *         in="query",
+	 *         description="The new surnames of the person.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="string"
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=400,
+	 *         description="Some of the required params are not present."
+	 *     ),
+	 *     @OA\Response(
+	 *         response="404",
+	 *         description="No person found for provided identifier.",
+	 *     ),
+	 *     @OA\Response(
+	 *         response="200",
+	 *         description="Person updated successfully",
+	 *     )
+	 * )
+	 */
 	public function put(Request $request){
 		try{
 			$identifier = $request->get('identifier');
@@ -100,10 +263,10 @@ class PersonsController extends BaseController
 			$surnames  = $request->get('surnames');
 			
 			if (!Utils::isValidIdentifier($identifier))
-				return $this->response->unprocessable("Invalid identifier.");
+				return $this->response->errorBadRequest("Invalid identifier.");
 			
 			if (!$firstName && !$surnames)
-				return $this->response->unprocessable("Params: first_name, surnames at least one required.");
+				return $this->response->errorBadRequest("Params: first_name, surnames at least one required.");
 			
 			$person = Person::getById($identifier);
 			if (!$person)
