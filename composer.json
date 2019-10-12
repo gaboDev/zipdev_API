@@ -1,0 +1,20 @@
+{
+    "name": "gabodev/zipdev",
+    "authors": [
+        {
+            "name": "Gabriel López",
+            "email": "gabriel.alejandro.lopez.torres@gmail.com"
+        }
+    ],
+    "autoload": {
+        "classmap": [
+            "src/"
+        ]
+    },
+    "require": {
+        "symfony/http-foundation": "^4.3",
+        "symfony/routing": "^4.3",
+        "symfony/http-kernel": "^4.3",
+        "vlucas/phpdotenv": "^3.6"
+    }
+}
