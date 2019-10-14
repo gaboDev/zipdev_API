@@ -27,6 +27,21 @@ class Utils
 		return preg_match('/^[0-9]{10}$/', $phone) === 1;
 	}
 	
+	static function filterData(array $relatedData, string $phoneIndex, string $emailIndex) : array {
+		return [
+			'emails' => self::filter($relatedData, $emailIndex),
+			'phones' => array_values( self::filter($relatedData, $phoneIndex) )
+		];
+	}
+	
+	private static function filter(array $rows, string $index) : array {
+		$filteredRows = array_map(function ($row) use ($index){
+			return $row[$index];
+		}, $rows);
+		
+		return array_unique($filteredRows);
+	}
+	
 	
 	/**
 	 * @param string $commaSeparatedItems

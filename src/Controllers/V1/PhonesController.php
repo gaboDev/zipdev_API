@@ -117,10 +117,7 @@ class PhonesController extends BaseController
 			
 			Transaction::beginTransaction();
 			
-				$phoneModel = new Phone();
-				$phoneModel->phone = $phone;
-				$phoneModel->person_id = $person->id;
-				$phoneModel->save();
+				$phoneModel = Phone::create($phone, $person->id);
 				
 			Transaction::commit();
 			
@@ -227,7 +224,7 @@ class PhonesController extends BaseController
 	 *     @OA\Parameter(
 	 *         name="phone",
 	 *         in="query",
-	 *         description="The phone number to delete.",
+	 *         description="The phone number to update.",
 	 *         required=true,
 	 *         @OA\Schema(
 	 *           type="string"

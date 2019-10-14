@@ -32,7 +32,7 @@ class Query
 	}
 	
 	public function where(string $field, string $operator = "=", $value) : Query {
-		$this->whereClauses[] = "`$field` $operator ?";
+		$this->whereClauses[] = "$field $operator ?";
 		$this->values[] = $value;
 		return $this;
 	}
@@ -44,7 +44,8 @@ class Query
 		$modelPK = $model->getPK();
 		$mainClassTableName = $this->mainClass->getTableName();
 		$mainClassPK = $this->mainClass->getPK();
-		$this->joinClauses[] = "INNER JOIN $modelTableName on $modelTableName.$modelPK = $mainClassTableName.$mainClassPK";
+		$defaultFK = $mainClassTableName."_id";
+		$this->joinClauses[] = "INNER JOIN $modelTableName on $modelTableName.$defaultFK = $mainClassTableName.$mainClassPK";
 		return $this;
 	}
 	

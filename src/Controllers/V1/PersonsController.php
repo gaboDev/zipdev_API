@@ -290,6 +290,66 @@ class PersonsController extends BaseController
 			return $this->response->errorInternal($exception->getMessage());
 		}
 	}
+	
+	
+	/**
+	 * @OA\Put(
+	 *     path="/api/v1/getAllRelatedData",
+	 *     summary="Retrieve all info about a person",
+	 *     tags={"persons"},
+	 *     @OA\Parameter(
+	 *         name="identifier",
+	 *         in="query",
+	 *         description="The identifier of the person.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="integer"
+	 *         )
+	 *     )
+	 *     @OA\Response(
+	 *         response=400,
+	 *         description="Some of the required params are not present."
+	 *     ),
+	 *     @OA\Response(
+	 *         response="404",
+	 *         description="No person found for provided identifier.",
+	 *     ),
+	 *     @OA\Response(
+	 *         response="200",
+	 *         description="Information retrieved successfully",
+	 *     )
+	 * )
+	 */
+	public function getAllRelatedData(Request $request){
+		
+		$identifier = $request->get('identifier');
+		if (!Utils::isValidIdentifier($identifier))
+			return $this->response->errorBadRequest("Invalid identifier.");
+		
+		$person = Person::getById($identifier);
+		if (!$person)
+			return $this->response->errorNotFound("Person not found.");
+		
+		try{
+			
+			$relatedData = DB::table(Person::class)
+				->select('phone', 'email')
+				->join(Phone::class)
+				->join(Email::class)
+				->where("persons.id", '=', $person->id)
+				->get();
+			
+			$filteredData = Utils::filterData($relatedData, 'phone', 'email');
+			$personData = $person->toArray();
+			$personData["info"] = $filteredData;
+			
+			return $this->response->ok("ok", $personData);
+			
+		}catch (\Exception $exception){
+			return $this->response->errorInternal($exception->getMessage());
+		}
+		
+	}
 
 
 }

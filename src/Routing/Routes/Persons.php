@@ -5,6 +5,7 @@ namespace Routing\Routes;
 use Symfony\Component\Routing\RouteCollection;
 use Routing\Routes\Route as RouteInterface;
 use Routing\Router;
+use Symfony\Component\Routing\Route as SymfonyRoute;
 
 class Persons implements RouteInterface
 {
@@ -12,6 +13,8 @@ class Persons implements RouteInterface
 	{
 		$path = 'persons';
 		$controller = "Controllers\V1\PersonsController";
-		return Router::createRESTRoutes($path, $controller);
+		$RESTRutes = Router::createRESTRoutes($path, $controller);
+		$RESTRutes->add('persons_getAllRelatedData', new SymfonyRoute("$path/getAllRelatedData", ['_controller' => "$controller::getAllRelatedData"]));
+		return $RESTRutes;
 	}
 }

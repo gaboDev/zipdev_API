@@ -12,12 +12,12 @@ class Email extends BaseModel
 	protected $table = 'emails';
 	public $id;
 	public $email;
-	public $person_id;
+	public $persons_id;
 	
 	static function create(string $email, int $person_id) : Email {
 		$emailModel = new Email();
 		$emailModel->email = $email;
-		$emailModel->person_id = $person_id;
+		$emailModel->persons_id = $person_id;
 		$emailModel->save();
 		return $emailModel;
 	}
@@ -32,7 +32,7 @@ class Email extends BaseModel
 	static function getByEmailAndPersonId(string $phone, int $personId){
 		return DB::table(Email::class)
 			->where('email', '=', $phone)
-			->where('person_id', '=', $personId)
+			->where('persons_id', '=', $personId)
 			->first();
 	}
 }

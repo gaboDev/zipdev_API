@@ -31,12 +31,12 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `zipdev`.`phones` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `phone` VARCHAR(15) NOT NULL,
-  `person_id` INT UNSIGNED NOT NULL,
+  `persons_id` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
-  INDEX `FK_persons` (`person_id` ASC),
-  UNIQUE INDEX `UQ_phone_persons` (`phone` ASC, `person_id` ASC),
+  INDEX `FK_persons` (`persons_id` ASC),
+  UNIQUE INDEX `UQ_phone_persons` (`phone` ASC, `persons_id` ASC),
   CONSTRAINT `fk_phones_1`
-    FOREIGN KEY (`person_id`)
+    FOREIGN KEY (`persons_id`)
     REFERENCES `zipdev`.`persons` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
@@ -49,12 +49,12 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `zipdev`.`emails` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `email` VARCHAR(100) NOT NULL,
-  `person_id` INT UNSIGNED NOT NULL,
+  `persons_id` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
-  INDEX `FK_persons` (`person_id` ASC),
-  UNIQUE INDEX `UQ_email_person` (`email` ASC, `person_id` ASC),
+  INDEX `FK_persons` (`persons_id` ASC),
+  UNIQUE INDEX `UQ_email_person` (`email` ASC, `persons_id` ASC),
   CONSTRAINT `fk_emails_1`
-    FOREIGN KEY (`person_id`)
+    FOREIGN KEY (`persons_id`)
     REFERENCES `zipdev`.`persons` (`id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE)

@@ -12,12 +12,12 @@ class Phone extends BaseModel
 	protected $table = 'phones';
 	public $id;
 	public $phone;
-	public $person_id;
+	public $persons_id;
 	
 	static function create(string $phone, int $person_id){
 		$phoneModel = new Phone();
 		$phoneModel->phone = $phone;
-		$phoneModel->person_id = $person_id;
+		$phoneModel->persons_id = $person_id;
 		$phoneModel->save();
 		return $phoneModel;
 	}
@@ -31,7 +31,7 @@ class Phone extends BaseModel
 	static function getByPhoneAndPersonId(string $phone, int $personId){
 		return DB::table(Phone::class)
 				 ->where('phone', '=', $phone)
-				 ->where('person_id', '=', $personId)
+				 ->where('persons_id', '=', $personId)
 				 ->first();
 	}
 }

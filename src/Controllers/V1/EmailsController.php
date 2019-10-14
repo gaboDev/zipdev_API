@@ -13,6 +13,31 @@ use Database\DatabaseConnection as Transaction;
 class EmailsController extends BaseController
 {
 	
+	/**
+	 * @OA\Get(
+	 *     path="/api/v1/emails",
+	 *     tags={"emails"},
+	 *     summary="Return a list of registered emails",
+	 *     description="If a single email is provided return its related data.",
+	 *     @OA\Parameter(
+	 *         name="email",
+	 *         in="query",
+	 *         description="An existing email",
+	 *         required=false,
+	 *         @OA\Schema(
+	 *           type="string"
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=200,
+	 *         description="Successful operation"
+	 *     ),
+	 *     @OA\Response(
+	 *         response="404",
+	 *         description="No data found",
+	 *     )
+	 * )
+	 */
 	public function get(Request $request)
 	{
 		try{
@@ -34,6 +59,44 @@ class EmailsController extends BaseController
 	}
 	
 	
+	
+	/**
+	 * @OA\Post(
+	 *     path="/api/v1/emails",
+	 *     summary="Create an emails",
+	 *     tags={"emails"},
+	 *     @OA\Parameter(
+	 *         name="person_identifier",
+	 *         in="query",
+	 *         description="The identifier of the person.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="integer"
+	 *         )
+	 *     ),
+	 *     @OA\Parameter(
+	 *         name="email",
+	 *         in="query",
+	 *         description="The email of the person.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="string"
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=400,
+	 *         description="Some of the required params are not present."
+	 *     ),
+	 *     @OA\Response(
+	 *         response="404",
+	 *         description="Person not found for provided identifier.",
+	 *     ),
+	 *     @OA\Response(
+	 *         response="201",
+	 *         description="The email was registered successfully",
+	 *     )
+	 * )
+	 */
 	public function post(Request $request){
 		try{
 			
@@ -41,10 +104,10 @@ class EmailsController extends BaseController
 			$email = $request->get('email');
 			
 			if (!Utils::isValidIdentifier($personIdentifier))
-					return $this->response->unprocessable("Invalid person identifier.");
+					return $this->response->errorBadRequest("Invalid person identifier.");
 			
 			if (!Utils::isEmail($email))
-					return $this->response->unprocessable("Invalid email.");
+					return $this->response->errorBadRequest("Invalid email.");
 			
 			$person = Person::getById($personIdentifier);
 			if (!$person)
@@ -53,10 +116,7 @@ class EmailsController extends BaseController
 			
 			Transaction::beginTransaction();
 			
-				$emailModel = new Email();
-				$emailModel->email = $email;
-				$emailModel->person_id = $person->id;
-				$emailModel->save();
+				$emailModel = Email::create($email, $person->id);
 			
 			Transaction::commit();
 			
@@ -69,6 +129,48 @@ class EmailsController extends BaseController
 	}
 	
 	
+	
+	/**
+	 * @OA\Delete(
+	 *     path="/api/v1/emails",
+	 *     summary="Delete an email",
+	 *     tags={"emails"},
+	 *     @OA\Parameter(
+	 *         name="person_identifier",
+	 *         in="query",
+	 *         description="The identifier of the person.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="integer"
+	 *         )
+	 *     ),
+	 *     @OA\Parameter(
+	 *         name="email",
+	 *         in="query",
+	 *         description="The email to delete.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="string"
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=400,
+	 *         description="Some of the required params are not present."
+	 *     ),
+	 *     @OA\Response(
+	 *         response="404",
+	 *         description="No person|phone found for provided data.",
+	 *     ),
+	 *     @OA\Response(
+	 *         response="422",
+	 *         description="It was not possible to delete the email.",
+	 *     ),
+	 *     @OA\Response(
+	 *         response="200",
+	 *         description="Email deleted successfully",
+	 *     )
+	 * )
+	 */
 	public function delete(Request $request){
 		try{
 			
@@ -76,10 +178,10 @@ class EmailsController extends BaseController
 			$email = $request->get('email');
 			
 			if (!Utils::isValidIdentifier($personIdentifier))
-				return $this->response->unprocessable("Invalid person identifier.");
+				return $this->response->errorBadRequest("Invalid person identifier.");
 			
 			if (!Utils::isEmail($email))
-				return $this->response->unprocessable("Invalid email.");
+				return $this->response->errorBadRequest("Invalid email.");
 			
 			$person = Person::getById($personIdentifier);
 			if (!$person)
@@ -95,7 +197,7 @@ class EmailsController extends BaseController
 			Transaction::commit();
 			
 			return $deleteResult ? $this->response->ok("Email record deleted.")
-								 : $this->response->ok("Unable to delete email record.");
+								 : $this->response->unprocessable("Unable to delete email record.");
 			
 		}catch (\Exception $exception){
 			Transaction::rollBack();
@@ -103,6 +205,45 @@ class EmailsController extends BaseController
 		}
 	}
 	
+	
+	
+	/**
+	 * @OA\Put(
+	 *     path="/api/v1/emails",
+	 *     summary="Update an email",
+	 *     tags={"emails"},
+	 *     @OA\Parameter(
+	 *         name="email_identifier",
+	 *         in="query",
+	 *         description="The identifier of the email record.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="integer"
+	 *         )
+	 *     ),
+	 *     @OA\Parameter(
+	 *         name="email",
+	 *         in="query",
+	 *         description="The email to update.",
+	 *         required=true,
+	 *         @OA\Schema(
+	 *           type="string"
+	 *         )
+	 *     ),
+	 *     @OA\Response(
+	 *         response=400,
+	 *         description="Some of the required params are not present."
+	 *     ),
+	 *     @OA\Response(
+	 *         response="404",
+	 *         description="No email found for provided data.",
+	 *     ),
+	 *     @OA\Response(
+	 *         response="200",
+	 *         description="Email updated successfully",
+	 *     )
+	 * )
+	 */
 	public function put(Request $request){
 		try {
 			
@@ -110,10 +251,10 @@ class EmailsController extends BaseController
 			$email = $request->get('email');
 			
 			if (!Utils::isValidIdentifier($emailIdentifier))
-				return $this->response->unprocessable("Invalid email identifier.");
+				return $this->response->errorBadRequest("Invalid email identifier.");
 			
 			if (!Utils::isEmail($email))
-				return $this->response->unprocessable("Invalid email.");
+				return $this->response->errorBadRequest("Invalid email.");
 			
 			$emailModel = Email::getById($emailIdentifier);
 			if (!$emailModel)
