@@ -48,11 +48,10 @@ The main features of this framework are designed to fulfill the code challenge r
 
    
 
-## API Documentation
-
-The API docs can be viewed in the following link
+## API Reference
+https://gabodev.github.io
  
 
 ## Live DEMO
+http://74.208.22.233/api/v1/persons
 
-enlace
