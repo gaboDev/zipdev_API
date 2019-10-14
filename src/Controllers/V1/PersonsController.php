@@ -305,7 +305,7 @@ class PersonsController extends BaseController
 	 *         @OA\Schema(
 	 *           type="integer"
 	 *         )
-	 *     )
+	 *     ),
 	 *     @OA\Response(
 	 *         response=400,
 	 *         description="Some of the required params are not present."
